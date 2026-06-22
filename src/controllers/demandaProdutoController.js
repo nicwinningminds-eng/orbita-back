@@ -150,13 +150,16 @@ export async function buscarPorId(req, res) {
 
 export async function criar(req, res) {
   const {
-    id_demanda,
-    id_produto
+    demanda_id,
+    produto_id,
+    quantidade,
+    valor_unitario,
+    observacao
   } = req.body;
 
-  if (!id_demanda || !id_produto) {
+  if (!demanda_id || !produto_id) {
     return res.status(400).json({
-      mensagem: 'Campos obrigatórios ausentes.'
+      mensagem: 'demanda_id e produto_id são obrigatórios.'
     });
   }
 
@@ -165,7 +168,7 @@ export async function criar(req, res) {
 
     const demanda = await db.get(
       'SELECT * FROM demandas WHERE id = ?',
-      [id_demanda]
+      [demanda_id]
     );
 
     if (!demanda) {
@@ -181,22 +184,37 @@ export async function criar(req, res) {
     }
 
     const resultado = await db.run(
-      `INSERT INTO demanda_produto
-       (id_demanda, id_produto)
-       VALUES (?, ?)`,
-      [id_demanda, id_produto]
+      `INSERT INTO demanda_produtos
+       (
+         demanda_id,
+         produto_id,
+         quantidade,
+         valor_unitario,
+         observacao
+       )
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        demanda_id,
+        produto_id,
+        quantidade || 1,
+        valor_unitario || null,
+        observacao || null
+      ]
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       id: resultado.lastID,
-      id_demanda,
-      id_produto
+      demanda_id,
+      produto_id,
+      quantidade,
+      valor_unitario,
+      observacao
     });
 
   } catch (erro) {
-    console.error('[demandaProduto.criar]', erro);
+    console.error('[demanda_produtos.criar]', erro);
 
-    res.status(500).json({
+    return res.status(500).json({
       mensagem: 'Erro ao criar relacionamento.'
     });
   }
