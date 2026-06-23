@@ -80,6 +80,23 @@ export async function criar(req, res) {
       ]
     );
 
+     const demandaId = resultado.lastID;
+
+    // 2. cria produtos vinculados
+    if (Array.isArray(produtos)) {
+      for (const item of produtos) {
+        await db.run(
+          `INSERT INTO demanda_produtos (demanda_id, produto_id, quantidade)
+           VALUES (?, ?, ?)`,
+          [
+            demandaId,
+            item.produto_id,
+            item.quantidade || 1
+          ]
+        );
+      }
+    }
+
     res.status(201).json({
       id: resultado.lastID,
       nome,
