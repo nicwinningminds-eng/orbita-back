@@ -64,7 +64,8 @@ export async function criar(req, res) {
     nome_cliente,
     descricao,
     prioridade,
-    status
+    status,
+    produtos
   } = req.body;
 
   const id_usuario = req.usuarioId; // 🔥 AQUI É A CORREÇÃO PRINCIPAL
@@ -89,6 +90,22 @@ export async function criar(req, res) {
         status || 'novo'
       ]
     );
+
+    const demandaId = resultado.lastID;
+
+     if (Array.isArray(produtos)) {
+      for (const item of produtos) {
+        await db.run(
+          `INSERT INTO demanda_produtos (demanda_id, produto_id, quantidade)
+           VALUES (?, ?, ?)`,
+          [
+            demandaId,
+            item.produto_id,
+            item.quantidade || 1
+          ]
+        );
+      }
+    }
 
     res.status(201).json({
       id: resultado.lastID,
